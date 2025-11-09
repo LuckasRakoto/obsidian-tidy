@@ -1,5 +1,8 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
+use clap::{arg, command, value_parser};
+
+#[allow(unused)]
 struct Cli {
     root_path: std::path::PathBuf,
 }
@@ -10,10 +13,20 @@ fn find_all_images() -> HashMap<String, u8>{
     m
 }
 
+
 fn main() {
-    let path = std::env::args().nth(1).expect("Specify root folder");
-    let args = Cli {
-        root_path: std::path::PathBuf::from(path),
-    };
-    println!("root : {:?}", args.root_path);
+    let matches = command!()
+        .arg(
+            arg!(
+                -s --source <File> "Sets the base path"
+            )
+            .required(false)
+            .value_parser(value_parser!(PathBuf))
+        )
+        .get_matches();
+    let mut args = Cli { root_path : PathBuf::from(".")};
+    if let Some(source) = matches.get_one::<PathBuf>("source"){
+        args.root_path = source.to_path_buf();
+    }
+    println!("Source value : {}", args.root_path.display());
 }
