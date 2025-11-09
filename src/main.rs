@@ -6,6 +6,19 @@ struct Cli {
     root_path: std::path::PathBuf,
 }
 
+fn get_ignores(root_path: std::path::PathBuf) -> HashMap<String,u8>{
+    let mut ignores: HashMap<String, u8> = HashMap::new();
+    ignores.insert(".git".to_string(), 0);
+    let gitignore = root_path.join(".gitignore");
+
+    if let Ok(_) =  fs::exists(&gitignore){
+        println!("Found .gitignore")
+    } else {
+        println!("Did not found .gitignore")
+    }
+    ignores
+}
+
 fn find_all_images(root_path: std::path::PathBuf) -> HashMap<String, u8>{
     let m = HashMap::new();
     let mut queue: Vec<PathBuf> = Vec::new();
@@ -14,7 +27,10 @@ fn find_all_images(root_path: std::path::PathBuf) -> HashMap<String, u8>{
         let read_result = fs::read_dir(&dir);
         if let Ok(entries) = read_result {
             for entry in entries.flatten() {
-                println!("{}",entry.path().display());
+                if entry.path().is_dir() {
+                    queue.push(entry.path());
+                    continue;
+                }
             }
         } else {
             eprintln!("Failed to read_dir {}", dir.display());
@@ -39,5 +55,7 @@ fn main() {
         args.root_path = source.to_path_buf();
     }
     println!("Source value : {}", args.root_path.display());
-    find_all_images(args.root_path);
+    let _ = get_ignores(args.root_path.clone());
+
+    find_all_images(args.root_path.clone());
 }
