@@ -32,7 +32,7 @@ fn find_all_images(root_path: std::path::PathBuf) -> HashMap<String, u8>{
         ("png", true),
         ("svg", true),
     ]);
-    let mut m: HashMap<String, u8> = HashMap::new();
+    let mut images: HashMap<String, u8> = HashMap::new();
     let mut queue: Vec<PathBuf> = Vec::new();
     queue.push(root_path);
     while let Some(dir) = queue.pop(){
@@ -50,17 +50,16 @@ fn find_all_images(root_path: std::path::PathBuf) -> HashMap<String, u8>{
                         continue;
                 };
 
-                if images_types.contains_key(ext_str) {
-                    if let Some(path_str) = path.to_str(){
-                        m.insert(path_str.to_string(), 1);
+                if images_types.contains_key(ext_str)
+                    && let Some(path_str) = path.to_str(){
+                        images.insert(path_str.to_string(), 1);
                     }
-                }
                 
 
             }
         }
     }
-    m
+    images
 }
 
 
