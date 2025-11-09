@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs, path:: PathBuf};
+use std::{collections::HashMap, fs::{self, read_to_string}, path:: PathBuf};
 
 use clap::{arg, command, value_parser};
 
@@ -12,7 +12,9 @@ fn get_ignores(root_path: std::path::PathBuf) -> HashMap<String,u8>{
     let gitignore = root_path.join(".gitignore");
 
     if let Ok(_) =  fs::exists(&gitignore){
-        println!("Found .gitignore")
+        for line in read_to_string(&gitignore).unwrap().lines(){
+            ignores.insert(line.to_string(), 0);
+        }
     } else {
         println!("Did not found .gitignore")
     }
