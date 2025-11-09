@@ -13,10 +13,8 @@ fn find_all_images(root_path: std::path::PathBuf) -> HashMap<String, u8>{
     while let Some(dir) = queue.pop(){
         let read_result = fs::read_dir(&dir);
         if let Ok(entries) = read_result {
-            for entry in entries {
-                if let Ok(entry) = entry {
-                    println!("{}",entry.path().display());
-                }
+            for entry in entries.flatten() {
+                println!("{}",entry.path().display());
             }
         } else {
             eprintln!("Failed to read_dir {}", dir.display());
