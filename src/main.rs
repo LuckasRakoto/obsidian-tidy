@@ -7,13 +7,17 @@ struct Cli {
 }
 
 fn get_ignores(root_path: std::path::PathBuf) -> HashMap<String,u8>{
-    let mut ignores: HashMap<String, u8> = HashMap::new();
-    ignores.insert(".git".to_string(), 0);
+    let mut ignores: HashMap<String, u8> = HashMap::from([
+        (".git".to_string(),0)
+    ]);
     let gitignore = root_path.join(".gitignore");
 
-    if fs::exists(&gitignore).is_ok(){
+    if gitignore.exists() {
         for line in read_to_string(&gitignore).unwrap().lines(){
-            ignores.insert(line.to_string(), 0);
+            let trimmed_line = line.trim();
+            if !trimmed_line.is_empty() && !trimmed_line.starts_with('#'){
+                ignores.insert(trimmed_line.to_string(), 0);
+            }
         }
     } else {
         println!("Did not found .gitignore")
@@ -57,7 +61,10 @@ fn main() {
         args.root_path = source.to_path_buf();
     }
     println!("Source value : {}", args.root_path.display());
-    let _ = get_ignores(args.root_path.clone());
+    let i = get_ignores(args.root_path.clone());
+    i.iter().for_each(|(k,_)|{
+        println!("{:?}", k);
+    });
 
     find_all_images(args.root_path.clone());
 }
