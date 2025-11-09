@@ -11,7 +11,7 @@ fn get_ignores(root_path: std::path::PathBuf) -> HashMap<String,u8>{
     ignores.insert(".git".to_string(), 0);
     let gitignore = root_path.join(".gitignore");
 
-    if let Ok(_) =  fs::exists(&gitignore){
+    if fs::exists(&gitignore).is_ok(){
         for line in read_to_string(&gitignore).unwrap().lines(){
             ignores.insert(line.to_string(), 0);
         }
