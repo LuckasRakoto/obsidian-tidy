@@ -1,3 +1,5 @@
+#![allow(dead_code, unused)]
+
 use std::{collections::HashMap, ffi::OsStr, fs::{self, read_to_string}, path:: PathBuf};
 
 use clap::{arg, command, value_parser};
@@ -62,6 +64,12 @@ fn find_all_images(root_path: std::path::PathBuf) -> HashMap<String, u8>{
     images
 }
 
+fn read_file(file_path: &str){
+    let Ok(content) = read_to_string(file_path) else {
+        eprintln!("Couldn't read file {:?}", file_path);
+        return;
+    };
+}
 
 fn main() {
     let matches = command!()
@@ -78,10 +86,15 @@ fn main() {
         args.root_path = source.to_path_buf();
     }
     println!("Source value : {}", args.root_path.display());
-    let i = get_ignores(args.root_path.clone());
-    i.iter().for_each(|(k,_)|{
+    let ignores = get_ignores(args.root_path.clone());
+    ignores.iter().for_each(|(k,_)|{
         println!("{:?}", k);
     });
 
-    find_all_images(args.root_path.clone());
+    let images = find_all_images(args.root_path.clone());
+    images.iter().for_each(|(k,_)|{
+        println!("{:?}", k);
+    });
+
+
 }
