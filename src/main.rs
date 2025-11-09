@@ -1,15 +1,27 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, fs, path:: PathBuf};
 
 use clap::{arg, command, value_parser};
 
-#[allow(unused)]
 struct Cli {
     root_path: std::path::PathBuf,
 }
 
-#[allow(dead_code, unused_mut)]
-fn find_all_images() -> HashMap<String, u8>{
-    let mut m = HashMap::new();
+fn find_all_images(root_path: std::path::PathBuf) -> HashMap<String, u8>{
+    let m = HashMap::new();
+    let mut queue: Vec<PathBuf> = Vec::new();
+    queue.push(root_path);
+    while let Some(dir) = queue.pop(){
+        let read_result = fs::read_dir(&dir);
+        if let Ok(entries) = read_result {
+            for entry in entries {
+                if let Ok(entry) = entry {
+                    println!("{}",entry.path().display());
+                }
+            }
+        } else {
+            eprintln!("Failed to read_dir {}", dir.display());
+        }
+    }
     m
 }
 
@@ -29,4 +41,5 @@ fn main() {
         args.root_path = source.to_path_buf();
     }
     println!("Source value : {}", args.root_path.display());
+    find_all_images(args.root_path);
 }
