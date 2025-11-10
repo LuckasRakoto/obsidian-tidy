@@ -113,15 +113,24 @@ fn move_file(src: PathBuf, mut dest: PathBuf){
     dest.pop();
     if let Some(file_name) = src.file_name(){
         dest.push(file_name);
-        std::fs::rename(src, dest);
+        if (src != dest){
+            println!("{} -> {}", src.display(), dest.display());
+            std::fs::rename(src, dest);
+        }
     }
 }
 
 fn move_files(
-    notes: HashMap<PathBuf, Vec<String>>, images: 
-    HashMap<String, PathBuf>
+    notes:  HashMap<PathBuf, Vec<String>>,
+    images: HashMap<String, PathBuf>
 ){
-
+    for (src, imgs) in notes.into_iter(){
+        for img in imgs.iter() {
+            if let Some(img_path) = images.get(img){
+                move_file(img_path.clone(), src.clone());
+            }
+        } 
+    }
 }
 
 fn main() {
@@ -142,8 +151,7 @@ fn main() {
 
     let images = find_all_images(args.root_path.clone());
 
-    let images_files = find_images_in_files(args.root_path.clone());
-    images_files.iter().for_each(|(k, v)| {
-        println!("{:?} -> {:?}", k.display(), v);
-    });
+    let notes = find_images_in_files(args.root_path.clone());
+
+    move_files(notes, images);
 }
