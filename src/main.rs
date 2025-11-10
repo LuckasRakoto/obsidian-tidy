@@ -1,6 +1,6 @@
 #![allow(dead_code, unused)]
 
-use std::{collections::HashMap, ffi::OsStr, fs::{self, read_to_string}, path:: PathBuf, sync::{LazyLock, OnceLock}};
+use std::{collections::HashMap, ffi::{OsStr, OsString}, fs::{self, read_to_string}, path:: PathBuf, sync::{LazyLock, OnceLock}};
 
 use clap::{arg, command, value_parser};
 use regex::Regex;
@@ -30,14 +30,14 @@ fn get_ignores(root_path: std::path::PathBuf) -> HashMap<String,u8>{
 
 static IGNORES: OnceLock<HashMap<String, u8>> = OnceLock::new();
 
-fn find_all_images(root_path: std::path::PathBuf) -> HashMap<String, u8>{
+fn find_all_images(root_path: std::path::PathBuf) -> HashMap<OsString, PathBuf>{
     let images_types: HashMap<&str,bool> = HashMap::from([
         ("jpg", true),
         ("jpeg",true),
         ("png", true),
         ("svg", true),
     ]);
-    let mut images: HashMap<String, u8> = HashMap::new();
+    let mut images = HashMap::new();
     let is_image = |path: PathBuf| {
             let Some(extension_str) = path
                 .extension()
@@ -46,8 +46,8 @@ fn find_all_images(root_path: std::path::PathBuf) -> HashMap<String, u8>{
             };
 
             if images_types.contains_key(extension_str)
-                && let Some(path_str) = path.to_str(){
-                    images.insert(path_str.to_string(), 1);
+                && let Some(filename) = path.file_name(){
+                    images.insert(filename.to_os_string(), path.clone());
                 }
     };
     abstract_bfs(root_path, is_image);
