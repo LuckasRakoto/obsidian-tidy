@@ -81,9 +81,9 @@ where F: FnMut(PathBuf),
 }
 
 fn find_images_in_files(root_path: PathBuf) -> HashMap<PathBuf, PathBuf> {
-    let mut files_to_img = HashMap::new();
+    
 
-    files_to_img
+    HashMap::new()
 }
 
 
