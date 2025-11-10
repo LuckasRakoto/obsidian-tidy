@@ -19,11 +19,12 @@ fn get_ignores(root_path: std::path::PathBuf) -> HashMap<String,u8>{
         for line in read_to_string(&gitignore).unwrap().lines(){
             let trimmed_line = line.trim();
             if !trimmed_line.is_empty() && !trimmed_line.starts_with('#'){
-                ignores.insert(trimmed_line.to_string(), 0);
+                let normalized = trimmed_line.strip_suffix('/').unwrap_or(trimmed_line);
+                ignores.insert(normalized.to_string(), 0);
             }
         }
     } else {
-        println!("Did not found .gitignore")
+        eprintln!("Did not found .gitignore")
     }
     ignores
 }
@@ -65,7 +66,6 @@ where F: FnMut(PathBuf),
                 let path = entry.path();
                 if let (Some(ignore), Some(name)) = (IGNORES.get(), path.file_name()) &&
                     ignore.contains_key(name.to_string_lossy().as_ref()) {
-                        println!("Ignoring : {}", path.display());
                     continue;
                 }
                 if path.is_dir(){
@@ -80,16 +80,25 @@ where F: FnMut(PathBuf),
     }
 }
 
-fn find_images_in_files(root_path: PathBuf) -> HashMap<PathBuf, PathBuf> {
-    
-
-    HashMap::new()
+fn find_images_in_files(root_path: PathBuf) -> HashMap<PathBuf, Vec<String>> {
+    let mut imgs_to_files = HashMap::new();
+    let extract_images = |path: PathBuf| {
+        let imgs = find_images_in_file(&path);    
+        if (!imgs.is_empty()){
+            imgs_to_files.insert(path.clone(), imgs);
+        }
+    };
+    abstract_bfs(root_path, extract_images);
+    imgs_to_files
 }
 
 
-fn find_images_in_file(file_path: &str) -> Vec<String>{
+fn find_images_in_file(file_path: &PathBuf) -> Vec<String>{
     let mut res = Vec::new();
-    let Ok(content) = read_to_string(file_path) else {
+    if file_path.extension().and_then(|ext| ext.to_str()) != Some("md") {
+        return res;
+    }
+    let Ok(content) = read_to_string(&file_path) else {
         eprintln!("Couldn't read file {:?}", file_path);
         return res;
     };
@@ -114,13 +123,12 @@ fn main() {
     if let Some(source) = matches.get_one::<PathBuf>("source"){
         args.root_path = source.to_path_buf();
     }
-    println!("Source value : {}", args.root_path.display());
     IGNORES.set(get_ignores(args.root_path.clone()));
 
     let images = find_all_images(args.root_path.clone());
-    images.iter().for_each(|(k,_)|{
-        println!("{:?}", k);
+
+    let images_files = find_images_in_files(args.root_path.clone());
+    images_files.iter().for_each(|(k, v)| {
+        println!("{:?} -> {:?}", k.display(), v);
     });
-
-
 }
