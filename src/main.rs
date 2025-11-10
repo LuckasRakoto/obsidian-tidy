@@ -31,7 +31,7 @@ fn get_ignores(root_path: std::path::PathBuf) -> HashMap<String,u8>{
 
 static IGNORES: OnceLock<HashMap<String, u8>> = OnceLock::new();
 
-fn find_all_images(root_path: std::path::PathBuf) -> HashMap<OsString, PathBuf>{
+fn find_all_images(root_path: std::path::PathBuf) -> HashMap<String, PathBuf>{
     let images_types: HashMap<&str,bool> = HashMap::from([
         ("jpg", true),
         ("jpeg",true),
@@ -47,8 +47,8 @@ fn find_all_images(root_path: std::path::PathBuf) -> HashMap<OsString, PathBuf>{
             };
 
             if images_types.contains_key(extension_str)
-                && let Some(filename) = path.file_name(){
-                    images.insert(filename.to_os_string(), path.clone());
+                && let Some(file_name) = path.file_name(){
+                    images.insert(file_name.to_string_lossy().to_string(), path.clone());
                 }
     };
     abstract_bfs(root_path, is_image);
@@ -107,6 +107,21 @@ fn find_images_in_file(file_path: &PathBuf) -> Vec<String>{
          res.push(caps["path"].to_string()); 
     }
     res
+}
+
+fn move_file(src: PathBuf, mut dest: PathBuf){
+    dest.pop();
+    if let Some(file_name) = src.file_name(){
+        dest.push(file_name);
+        std::fs::rename(src, dest);
+    }
+}
+
+fn move_files(
+    notes: HashMap<PathBuf, Vec<String>>, images: 
+    HashMap<String, PathBuf>
+){
+
 }
 
 fn main() {
