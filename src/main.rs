@@ -1,4 +1,4 @@
-use std::{collections::HashMap, ffi::{OsStr, OsString}, fs::{self, read_to_string}, path:: PathBuf, sync::{LazyLock, OnceLock}};
+use std::{collections::HashMap, ffi::OsStr, fs::{self, read_to_string}, path:: PathBuf, sync::OnceLock};
 
 use clap::{arg, command, value_parser};
 use regex::Regex;
@@ -96,7 +96,7 @@ fn find_images_in_file(file_path: &PathBuf) -> Vec<String>{
     if file_path.extension().and_then(|ext| ext.to_str()) != Some("md") {
         return res;
     }
-    let Ok(content) = read_to_string(&file_path) else {
+    let Ok(content) = read_to_string(file_path) else {
         eprintln!("Couldn't read file {:?}", file_path);
         return res;
     };
@@ -112,7 +112,7 @@ fn move_file(src: PathBuf, mut dest: PathBuf){
     if let Some(file_name) = src.file_name(){
         dest.push(file_name);
         if src != dest{
-            if let Ok(_) = std::fs::rename(&src, &dest) {
+            if std::fs::rename(&src, &dest).is_ok() {
                 println!("Moved: {} -> {}", src.display(), dest.display());
             } else {
                 eprintln!("Couldn't move {} to {} as expected", src.display(), dest.display());
