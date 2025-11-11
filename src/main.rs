@@ -1,5 +1,3 @@
-#![allow(dead_code, unused)]
-
 use std::{collections::HashMap, ffi::{OsStr, OsString}, fs::{self, read_to_string}, path:: PathBuf, sync::{LazyLock, OnceLock}};
 
 use clap::{arg, command, value_parser};
@@ -84,7 +82,7 @@ fn find_images_in_files(root_path: PathBuf) -> HashMap<PathBuf, Vec<String>> {
     let mut imgs_to_files = HashMap::new();
     let extract_images = |path: PathBuf| {
         let imgs = find_images_in_file(&path);    
-        if (!imgs.is_empty()){
+        if !imgs.is_empty(){
             imgs_to_files.insert(path.clone(), imgs);
         }
     };
@@ -113,9 +111,12 @@ fn move_file(src: PathBuf, mut dest: PathBuf){
     dest.pop();
     if let Some(file_name) = src.file_name(){
         dest.push(file_name);
-        if (src != dest){
-            println!("{} -> {}", src.display(), dest.display());
-            std::fs::rename(src, dest);
+        if src != dest{
+            if let Ok(_) = std::fs::rename(&src, &dest) {
+                println!("Moved: {} -> {}", src.display(), dest.display());
+            } else {
+                eprintln!("Couldn't move {} to {} as expected", src.display(), dest.display());
+            }
         }
     }
 }
@@ -147,7 +148,10 @@ fn main() {
     if let Some(source) = matches.get_one::<PathBuf>("source"){
         args.root_path = source.to_path_buf();
     }
-    IGNORES.set(get_ignores(args.root_path.clone()));
+    let Ok(_) = IGNORES.set(get_ignores(args.root_path.clone())) else {
+        eprintln!("Something wrong happened..");
+        return;
+    };
 
     let images = find_all_images(args.root_path.clone());
 
